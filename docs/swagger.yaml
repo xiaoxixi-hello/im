@@ -1,6 +1,21 @@
 info:
   contact: {}
 paths:
+  /problem-detail:
+    get:
+      parameters:
+      - description: identity
+        in: query
+        name: identity
+        type: string
+      responses:
+        "200":
+          description: '{"code":200,"data":""}'
+          schema:
+            type: string
+      summary: 问题详情
+      tags:
+      - 公共方法
   /problem-list:
     get:
       parameters:
@@ -16,12 +31,31 @@ paths:
         in: query
         name: keyword
         type: string
+      - description: category_identity
+        in: query
+        name: category_identity
+        type: string
       responses:
         "200":
           description: '{"code":200,"data":""}'
           schema:
             type: string
       summary: 问题列表
+      tags:
+      - 公共方法
+  /user-detail:
+    get:
+      parameters:
+      - description: identity
+        in: query
+        name: identity
+        type: string
+      responses:
+        "200":
+          description: '{"code":200,"data":""}'
+          schema:
+            type: string
+      summary: 用户信息
       tags:
       - 公共方法
 swagger: "2.0"

@@ -14,8 +14,13 @@ func Router() *gin.Engine {
 	// swagger页面
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	// 路由
+	// 问题
 	r.GET("/ping", service.Ping)
 	r.GET("/problem-list", service.GetProblemList)
+	r.GET("/problem-detail", service.GetProblemDetail)
+
+	// 用户
+	r.GET("/user-detail", service.GetUserDetail)
+
 	return r
 }
