@@ -9,6 +9,7 @@ type UserBasic struct {
 	Password string `gorm:"column:password;type:varchar(32);" json:"password"`
 	Phone    string `gorm:"column:phone;type:varchar(20);" json:"phone"`
 	Mail     string `gorm:"column:mail;type:varchar(100);" json:"mail"`
+	IsAdmin  int    `gorm:"column:is_admin;type:tinyint(1);" json:"is_admin"` // 是否是管理员【0-否，1-是】
 }
 
 func (table *UserBasic) TableName() string {

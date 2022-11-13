@@ -6,3 +6,5 @@ var (
 	DefaultPage = "1"  // 默认第一页
 	DefaultSize = "20" // 默认每页20条
 )
+
+var EmailPassWord = "rohebfvcjuxeegdj"

@@ -16,6 +16,36 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "公共方法"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":200,\"data\":\"\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/problem-detail": {
             "get": {
                 "tags": [
@@ -45,7 +75,7 @@ const docTemplate = `{
                 "tags": [
                     "公共方法"
                 ],
-                "summary": "问题列表",
+                "summary": "提交列表",
                 "parameters": [
                     {
                         "type": "integer",
@@ -61,15 +91,46 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "keyword",
-                        "name": "keyword",
+                        "description": "problem_identity",
+                        "name": "problemIdentity",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "category_identity",
-                        "name": "category_identity",
+                        "description": "user_identity",
+                        "name": "userIdentity",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":200,\"data\":\"\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/send-email": {
+            "post": {
+                "tags": [
+                    "公共方法"
+                ],
+                "summary": "发送验证码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {

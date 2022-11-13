@@ -1,6 +1,25 @@
 info:
   contact: {}
 paths:
+  /login:
+    post:
+      parameters:
+      - description: username
+        in: formData
+        name: username
+        type: string
+      - description: password
+        in: formData
+        name: password
+        type: string
+      responses:
+        "200":
+          description: '{"code":200,"data":""}'
+          schema:
+            type: string
+      summary: 用户登录
+      tags:
+      - 公共方法
   /problem-detail:
     get:
       parameters:
@@ -27,20 +46,40 @@ paths:
         in: query
         name: size
         type: integer
-      - description: keyword
+      - description: problem_identity
         in: query
-        name: keyword
+        name: problemIdentity
         type: string
-      - description: category_identity
+      - description: user_identity
         in: query
-        name: category_identity
+        name: userIdentity
+        type: string
+      - description: status
+        in: query
+        name: status
         type: string
       responses:
         "200":
           description: '{"code":200,"data":""}'
           schema:
             type: string
-      summary: 问题列表
+      summary: 提交列表
+      tags:
+      - 公共方法
+  /send-email:
+    post:
+      parameters:
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":200,"data":""}'
+          schema:
+            type: string
+      summary: 发送验证码
       tags:
       - 公共方法
   /user-detail:
