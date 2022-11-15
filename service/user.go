@@ -12,8 +12,10 @@ import (
 	"github.com/ylinyang/im/models"
 	"gorm.io/gorm"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/smtp"
+	"strconv"
 	"time"
 )
 
@@ -80,8 +82,16 @@ func Login(c *gin.Context) {
 // @Success 200 {string} json "{"code":200,"data":""}"
 // @Router /send-email [post]
 func SendMail(c *gin.Context) {
-	code := "123456"
 	mail := c.PostForm("email")
+	// 生成随机验证码
+	code := ""
+	// 生成随机数种子
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < 6; i++ {
+		code += strconv.Itoa(rand.Intn(10)) // 0-10随便选一个
+	}
+
+	// 发送邮件
 	e := email.NewEmail()
 	e.From = "master <2025907338@qq.com>"
 	e.To = []string{mail}
@@ -102,7 +112,7 @@ func SendMail(c *gin.Context) {
 		"msg":  "发送邮件成功",
 	})
 	// 将发送的验证码存入redis
-	define.RedisDB.Set(context.TODO(), mail, code, time.Second*15)
+	define.RedisDB.Set(context.TODO(), mail, code, time.Second*60)
 }
 
 // Register
@@ -110,7 +120,7 @@ func SendMail(c *gin.Context) {
 // @Summary 用户注册
 // @param username formData string true "username"
 // @param password formData string true "password"
-// @param code formData string ture "code"
+// @param code formData string true "code"
 // @param mail formData string true "mail"
 // @param phone formData string false "phone"
 // @Success 200 {string} json "{"code":200,"data":""}"
@@ -132,6 +142,10 @@ func Register(c *gin.Context) {
 	redisCode, err := define.RedisDB.Get(context.Background(), mail).Result()
 	if err != nil {
 		log.Println("从redis获取验证码失败")
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "获取验证码失败,请重试",
+		})
 		return
 	}
 	if code != redisCode {
@@ -140,17 +154,39 @@ func Register(c *gin.Context) {
 			"msg":  "验证码不正确",
 		})
 	}
-	// 验证码正确 用户信息插入  生成token
+	// 验证码正确 判断mail是否重复
+	var eCount int64
+	if models.DB.Where("mail = ? ", mail).Model(new(models.UserBasic)).Count(&eCount).Error != nil {
+		log.Println("查询改用户是否注册失败")
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "用户注册失败,请重试",
+		})
+		return
+	}
+	if eCount > 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "该用户已经注册",
+		})
+		return
+	}
+
+	//用户信息插入  生成token
 	data := &models.UserBasic{
 		Identity: uuid.NewV4().String(),
 		Name:     username,
-		Password: password,
+		Password: fmt.Sprintf("%x", md5.Sum([]byte(password))),
 		Phone:    phone,
 		Mail:     mail,
 		IsAdmin:  0,
 	}
 	if models.DB.Create(data).Error != nil {
 		log.Println("用户信息插入数据库失败")
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "用户注册失败,请重试",
+		})
 		return
 	}
 	token, _ := define.GenerateToken(data.Identity, data.Name, data.IsAdmin)
@@ -198,5 +234,37 @@ func GetUserDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"data": data,
+	})
+}
+
+// UserRankList
+// @Tags 公共方法
+// @Summary 用户排行榜
+// @Param page query int false "page"
+// @Param size query int false "size"
+// @Success 200 {string} json "{"code":200,"data":""}"
+// @Router /user-rank-list [get]
+func UserRankList(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", define.DefaultPage))
+	size, _ := strconv.Atoi(c.DefaultQuery("size", define.DefaultSize))
+	page = (page - 1) * size
+
+	var userRankListCount int64
+	list := make([]models.UserBasic, 0)
+	// order 按照字段进行排序
+	if models.DB.Model(new(models.UserBasic)).Count(&userRankListCount).Order("pass_num DESC, submit_num ASC").
+		Offset(page).Limit(size).Find(&list).Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "获取排行榜失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": map[string]interface{}{
+			"list":  list,
+			"count": userRankListCount,
+		},
 	})
 }
