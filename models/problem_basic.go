@@ -15,6 +15,7 @@ type ProblemBasic struct {
 	MaxMem            int                `gorm:"column:max_mem;type:int(11);" json:"max_mem"`                   // 最大运行内存
 	PassNum           int64              `gorm:"column:pass_num;type:int(11);" json:"pass_num"`                 // 通过次数
 	SubmitNum         int64              `gorm:"column:submit_num;type:int(11);" json:"submit_num"`             // 提交次数
+	TestCases         []*TestCase        `gorm:"column:foreignKey:problem_identity;references:identity"`        // 关联测试用例
 }
 
 func (table *ProblemBasic) TableName() string {

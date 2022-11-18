@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 	"github.com/ylinyang/im/define"
 	"github.com/ylinyang/im/models"
 	"gorm.io/gorm"
@@ -84,4 +85,56 @@ func GetProblemDetail(c *gin.Context) {
 		"data": m,
 	})
 	return
+}
+
+// ProblemCreate
+// @Tags 私有方法
+// @Summary 管理员问题创建
+// @param token header string true "token"
+// @param title formData string true "title"
+// @param content formData string true "content"
+// @param max_runtime formData int false "max_runtime"
+// @param max_mem formData int false "max_mem"
+// @param category_ids formData array true "test_cases"
+// @Success 200 {string} json "{"code":200,"data":""}"
+// @Router /problem-create [post]
+func ProblemCreate(c *gin.Context) {
+	title := c.PostForm("title")
+	content := c.PostForm("content")
+	maxRuntime, _ := strconv.Atoi(c.PostForm("max_runtime"))
+	maxMem, _ := strconv.Atoi(c.PostForm("max_mem"))
+	categoryIds := c.PostFormArray("category_ids")
+	testCases := c.PostFormArray("test_cases")
+	if title == "" || content == "" || len(categoryIds) == 0 || len(testCases) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "参数不能为空",
+		})
+		return
+	}
+	identity := uuid.NewV4().String()
+	data := models.ProblemBasic{
+		Identity:   identity,
+		Title:      title,
+		Content:    content,
+		MaxRuntime: maxRuntime,
+		MaxMem:     maxMem,
+	}
+	// 处理分类
+
+	// 处理测试用例
+
+	if models.DB.Create(&data).Error != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "用户问题表创建失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": map[string]interface{}{
+			"identity": data.Identity,
+		},
+	})
 }
