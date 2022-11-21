@@ -98,7 +98,7 @@ func SendMail(c *gin.Context) {
 	e.Subject = "验证码已发送，请查收"
 	e.HTML = []byte("您的验证码：<b>" + code + "</b>")
 	err := e.SendWithTLS("smtp.qq.com:465",
-		smtp.PlainAuth("", "2025907338@qq.com", define.EmailPassWord, "smtp.qq.com"),
+		smtp.PlainAuth("", "xxx@qq.com", define.EmailPassWord, "smtp.qq.com"),
 		&tls.Config{InsecureSkipVerify: true, ServerName: "smtp.qq.com"})
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
